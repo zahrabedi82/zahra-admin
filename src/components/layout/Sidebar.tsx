@@ -1,3 +1,4 @@
+
 import { NavLink } from "react-router-dom";
 import {
   MdDashboard,
@@ -12,7 +13,6 @@ const Sidebar = () => {
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col">
       {/* Logo */}
-
       <div className="h-16 flex items-center justify-center border-b border-slate-700">
         <h1 className="text-2xl font-bold">
           Zahra
@@ -21,13 +21,12 @@ const Sidebar = () => {
       </div>
 
       {/* Menu */}
-
       <nav className="flex-1 p-4">
         <ul className="space-y-2">
           <li>
             <NavLink
               to="/"
-              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700"
+              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700 transition"
             >
               <MdDashboard size={22} />
               Dashboard
@@ -37,7 +36,7 @@ const Sidebar = () => {
           <li>
             <NavLink
               to="/users"
-              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700"
+              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700 transition"
             >
               <MdPeople size={22} />
               Users
@@ -47,7 +46,7 @@ const Sidebar = () => {
           <li>
             <NavLink
               to="/products"
-              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700"
+              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700 transition"
             >
               <MdInventory size={22} />
               Products
@@ -57,7 +56,7 @@ const Sidebar = () => {
           <li>
             <NavLink
               to="/orders"
-              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700"
+              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700 transition"
             >
               <MdShoppingCart size={22} />
               Orders
@@ -67,7 +66,7 @@ const Sidebar = () => {
           <li>
             <NavLink
               to="/settings"
-              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700"
+              className="flex items-center gap-3 rounded-lg p-3 hover:bg-slate-700 transition"
             >
               <MdSettings size={22} />
               Settings
@@ -77,9 +76,8 @@ const Sidebar = () => {
       </nav>
 
       {/* Footer */}
-
-      <div className="p-4 border-t border-slate-700">
-        <button className="flex w-full items-center gap-3 rounded-lg p-3 hover:bg-red-600 transition">
+      <div className="border-t border-slate-700 p-4">
+        <button className="flex w-full items-center gap-3 rounded-lg p-3 transition hover:bg-red-600">
           <MdLogout size={22} />
           Logout
         </button>
