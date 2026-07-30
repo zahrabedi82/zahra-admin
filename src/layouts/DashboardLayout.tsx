@@ -1,17 +1,16 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
+import Navbar from "../components/layout/Navbar";
 const DashboardLayout = () => {
   return (
     <div className="flex h-screen">
-      
+      <Navbar />
         <Sidebar />
 
       {/* Content */}
       <div className="flex-1 flex flex-col">
         {/* Navbar */}
-        <header className="h-16 bg-white border-b flex items-center px-6">
-          Navbar
-        </header>
+       
 
         {/* Main */}
         <main className="flex-1 bg-slate-100 p-6">

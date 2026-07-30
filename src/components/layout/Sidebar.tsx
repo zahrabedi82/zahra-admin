@@ -11,7 +11,6 @@ import {
 const Sidebar = () => {
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col">
-
       {/* Logo */}
 
       <div className="h-16 flex items-center justify-center border-b border-slate-700">
@@ -24,9 +23,7 @@ const Sidebar = () => {
       {/* Menu */}
 
       <nav className="flex-1 p-4">
-
         <ul className="space-y-2">
-
           <li>
             <NavLink
               to="/"
@@ -76,25 +73,17 @@ const Sidebar = () => {
               Settings
             </NavLink>
           </li>
-
         </ul>
-
       </nav>
 
       {/* Footer */}
 
       <div className="p-4 border-t border-slate-700">
-
         <button className="flex w-full items-center gap-3 rounded-lg p-3 hover:bg-red-600 transition">
-
           <MdLogout size={22} />
-
           Logout
-
         </button>
-
       </div>
-
     </aside>
   );
 };
