@@ -1,37 +1,20 @@
 
 
-import { MdNotificationsNone, MdMenu } from "react-icons/md";
+import { MdNotificationsNone } from "react-icons/md";
 import { FiSearch } from "react-icons/fi";
 
-interface NavbarProps {
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const Navbar = ({
-  isSidebarOpen,
-  setIsSidebarOpen,
-}: NavbarProps) => {
+const Navbar = () => {
   return (
     <header className="h-16 bg-white border-b flex items-center justify-between px-6">
-      {/* Left */}
-      <div className="flex items-center gap-4">
-        <button
-          className="lg:hidden"
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        >
-          <MdMenu size={28} />
-        </button>
+      {/* Search */}
+      <div className="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-2 w-80">
+        <FiSearch size={20} />
 
-        <div className="flex items-center gap-2 bg-slate-100 rounded-lg px-3 py-2 w-80">
-          <FiSearch size={20} />
-
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-transparent outline-none w-full"
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Search..."
+          className="bg-transparent outline-none w-full"
+        />
       </div>
 
       {/* Right */}
