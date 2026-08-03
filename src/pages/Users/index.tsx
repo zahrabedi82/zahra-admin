@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 import Table from "../../components/table/Table";
@@ -6,10 +5,14 @@ import { users } from "../../data/users";
 
 const Users = () => {
   const [search, setSearch] = useState("");
+  const [userList, setUserList] = useState(users);
 
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase())
-  );
+const filteredUsers = userList.filter((user) =>
+  user.name.toLowerCase().includes(search.toLowerCase())
+);
+const handleDelete = (id: number) => {
+  setUserList(userList.filter((user) => user.id !== id));
+};
 
   return (
     <div>
@@ -26,21 +29,10 @@ const Users = () => {
         />
       </div>
 
-      <Table
-        headers={[
-          "Name",
-          "Email",
-          "Role",
-          "Status",
-          "Actions",
-        ]}
-      >
+      <Table headers={["Name", "Email", "Role", "Status", "Actions"]}>
         {filteredUsers.length > 0 ? (
           filteredUsers.map((user) => (
-            <tr
-              key={user.id}
-              className="border-b hover:bg-slate-50 transition"
-            >
+            <tr key={user.id} className="border-b hover:bg-slate-50 transition">
               <td className="px-6 py-4">{user.name}</td>
 
               <td className="px-6 py-4">{user.email}</td>
@@ -53,8 +45,8 @@ const Users = () => {
                     user.status === "Active"
                       ? "bg-green-100 text-green-700"
                       : user.status === "Inactive"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-yellow-100 text-yellow-700"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
                   }`}
                 >
                   {user.status}
@@ -67,19 +59,19 @@ const Users = () => {
                     <MdEdit size={20} />
                   </button>
 
-                  <button className="text-red-600 hover:text-red-800 transition">
-                    <MdDelete size={20} />
-                  </button>
+                 <button
+  onClick={() => handleDelete(user.id)}
+  className="text-red-600 hover:text-red-800 transition"
+>
+  <MdDelete size={20} />
+</button>
                 </div>
               </td>
             </tr>
           ))
         ) : (
           <tr>
-            <td
-              colSpan={5}
-              className="py-8 text-center text-gray-500"
-            >
+            <td colSpan={5} className="py-8 text-center text-gray-500">
               No users found.
             </td>
           </tr>
