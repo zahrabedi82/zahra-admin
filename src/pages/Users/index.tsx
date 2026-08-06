@@ -15,7 +15,12 @@ const Users = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const [isAdding, setIsAdding] = useState(false);
-
+const [newUser, setNewUser] = useState({
+  name: "",
+  email: "",
+  role: "",
+  status: "Active",
+});
   const filteredUsers = userList.filter((user) =>
     user.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -215,23 +220,44 @@ const Users = () => {
             </h2>
 
             <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Name"
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-              />
+              
+           <input
+  type="text"
+  placeholder="Name"
+  value={newUser.name}
+  onChange={(e) =>
+    setNewUser({
+      ...newUser,
+      name: e.target.value,
+    })
+  }
+  className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+/>
 
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-              />
-
-              <input
-                type="text"
-                placeholder="Role"
-                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-              />
+       <input
+  type="email"
+  placeholder="Email"
+  value={newUser.email}
+  onChange={(e) =>
+    setNewUser({
+      ...newUser,
+      email: e.target.value,
+    })
+  }
+  className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+/>
+         <input
+  type="text"
+  placeholder="Role"
+  value={newUser.role}
+  onChange={(e) =>
+    setNewUser({
+      ...newUser,
+      role: e.target.value,
+    })
+  }
+  className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+/>
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
