@@ -53,10 +53,17 @@ const Users = () => {
     return;
   }
 
+
   if (!newUser.email.trim()) {
     setError("Please enter the user's email.");
     return;
   }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (!emailRegex.test(newUser.email)) {
+  setError("Please enter a valid email address.");
+  return;
+}
 
   if (!newUser.role.trim()) {
     setError("Please enter the user's role.");
