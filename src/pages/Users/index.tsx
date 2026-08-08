@@ -8,21 +8,22 @@ const Users = () => {
 
   const [userList, setUserList] = useState(users);
 
-  const [selectedUser, setSelectedUser] = useState<
-    (typeof users)[0] | null
-  >(null);
+  const [selectedUser, setSelectedUser] = useState<(typeof users)[0] | null>(
+    null,
+  );
 
   const [isEditing, setIsEditing] = useState(false);
 
   const [isAdding, setIsAdding] = useState(false);
-const [newUser, setNewUser] = useState({
-  name: "",
-  email: "",
-  role: "",
-  status: "Active",
-});
+  const [newUser, setNewUser] = useState({
+    name: "",
+    email: "",
+    role: "",
+    status: "Active",
+  });
+  const [error, setError] = useState("");
   const filteredUsers = userList.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase())
+    user.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const handleDelete = (id: number) => {
@@ -39,20 +40,53 @@ const [newUser, setNewUser] = useState({
 
     setUserList(
       userList.map((user) =>
-        user.id === selectedUser.id ? selectedUser : user
-      )
+        user.id === selectedUser.id ? selectedUser : user,
+      ),
     );
 
     setSelectedUser(null);
     setIsEditing(false);
   };
+ const handleAddUser = () => {
+  if (!newUser.name.trim()) {
+    setError("Please enter the user's name.");
+    return;
+  }
 
+  if (!newUser.email.trim()) {
+    setError("Please enter the user's email.");
+    return;
+  }
+
+  if (!newUser.role.trim()) {
+    setError("Please enter the user's role.");
+    return;
+  }
+
+  const user = {
+    id: Date.now(),
+    name: newUser.name,
+    email: newUser.email,
+    role: newUser.role,
+    status: "Active",
+  };
+
+  setUserList([...userList, user]);
+
+  setNewUser({
+    name: "",
+    email: "",
+    role: "",
+    status: "Active",
+  });
+
+  setError("");
+  setIsAdding(false);
+};
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">
-          Users
-        </h1>
+        <h1 className="text-3xl font-bold">Users</h1>
 
         <button
           onClick={() => setIsAdding(true)}
@@ -72,32 +106,15 @@ const [newUser, setNewUser] = useState({
         />
       </div>
 
-      <Table
-        headers={[
-          "Name",
-          "Email",
-          "Role",
-          "Status",
-          "Actions",
-        ]}
-      >
+      <Table headers={["Name", "Email", "Role", "Status", "Actions"]}>
         {filteredUsers.length > 0 ? (
           filteredUsers.map((user) => (
-            <tr
-              key={user.id}
-              className="border-b hover:bg-slate-50 transition"
-            >
-              <td className="px-6 py-4">
-                {user.name}
-              </td>
+            <tr key={user.id} className="border-b hover:bg-slate-50 transition">
+              <td className="px-6 py-4">{user.name}</td>
 
-              <td className="px-6 py-4">
-                {user.email}
-              </td>
+              <td className="px-6 py-4">{user.email}</td>
 
-              <td className="px-6 py-4">
-                {user.role}
-              </td>
+              <td className="px-6 py-4">{user.role}</td>
 
               <td className="px-6 py-4">
                 <span
@@ -105,8 +122,8 @@ const [newUser, setNewUser] = useState({
                     user.status === "Active"
                       ? "bg-green-100 text-green-700"
                       : user.status === "Inactive"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-yellow-100 text-yellow-700"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
                   }`}
                 >
                   {user.status}
@@ -134,28 +151,26 @@ const [newUser, setNewUser] = useState({
           ))
         ) : (
           <tr>
-            <td
-              colSpan={5}
-              className="py-8 text-center text-gray-500"
-            >
+            <td colSpan={5} className="py-8 text-center text-gray-500">
               No users found.
             </td>
           </tr>
         )}
       </Table>
-            {/* Edit Modal */}
+      {/* Edit Modal */}
       {isEditing && selectedUser && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h2 className="mb-6 text-2xl font-bold">
-              Edit User
-            </h2>
+            <h2 className="mb-6 text-2xl font-bold">Edit User</h2>
 
             <div className="space-y-4">
+              {error && (
+  <p className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-600">
+    {error}
+  </p>
+)}
               <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Name
-                </label>
+                <label className="mb-1 block text-sm font-medium">Name</label>
 
                 <input
                   type="text"
@@ -171,9 +186,7 @@ const [newUser, setNewUser] = useState({
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium">
-                  Email
-                </label>
+                <label className="mb-1 block text-sm font-medium">Email</label>
 
                 <input
                   type="email"
@@ -215,49 +228,46 @@ const [newUser, setNewUser] = useState({
       {isAdding && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h2 className="mb-6 text-2xl font-bold">
-              Add User
-            </h2>
+            <h2 className="mb-6 text-2xl font-bold">Add User</h2>
 
             <div className="space-y-4">
-              
-           <input
-  type="text"
-  placeholder="Name"
-  value={newUser.name}
-  onChange={(e) =>
-    setNewUser({
-      ...newUser,
-      name: e.target.value,
-    })
-  }
-  className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-/>
+              <input
+                type="text"
+                placeholder="Name"
+                value={newUser.name}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    name: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              />
 
-       <input
-  type="email"
-  placeholder="Email"
-  value={newUser.email}
-  onChange={(e) =>
-    setNewUser({
-      ...newUser,
-      email: e.target.value,
-    })
-  }
-  className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-/>
-         <input
-  type="text"
-  placeholder="Role"
-  value={newUser.role}
-  onChange={(e) =>
-    setNewUser({
-      ...newUser,
-      role: e.target.value,
-    })
-  }
-  className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-/>
+              <input
+                type="email"
+                placeholder="Email"
+                value={newUser.email}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    email: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              />
+              <input
+                type="text"
+                placeholder="Role"
+                value={newUser.role}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    role: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              />
             </div>
 
             <div className="mt-6 flex justify-end gap-3">
@@ -269,6 +279,7 @@ const [newUser, setNewUser] = useState({
               </button>
 
               <button
+                onClick={handleAddUser}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
               >
                 Add
