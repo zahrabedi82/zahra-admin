@@ -23,13 +23,16 @@ const Users = () => {
   });
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [userToDelete, setUserToDelete] = useState<
+  (typeof users)[0] | null
+>(null);
   const filteredUsers = userList.filter((user) =>
     user.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleDelete = (id: number) => {
-    setUserList(userList.filter((user) => user.id !== id));
-  };
+ const handleDelete = (user: (typeof users)[0]) => {
+  setUserToDelete(user);
+};
 
   const handleEdit = (user: (typeof users)[0]) => {
     setSelectedUser(user);
@@ -159,12 +162,12 @@ const Users = () => {
                     <MdEdit size={20} />
                   </button>
 
-                  <button
-                    onClick={() => handleDelete(user.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <MdDelete size={20} />
-                  </button>
+                 <button
+  onClick={() => handleDelete(user)}
+  className="text-red-600 hover:text-red-800"
+>
+  <MdDelete size={20} />
+</button>
                 </div>
               </td>
             </tr>
@@ -243,6 +246,48 @@ const Users = () => {
           </div>
         </div>
       )}
+      {/* Delete Confirmation Modal */}
+{userToDelete && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+      <h2 className="mb-3 text-2xl font-bold">
+        Delete User
+      </h2>
+
+      <p className="mb-6 text-slate-600">
+        Are you sure you want to delete{" "}
+        <span className="font-semibold text-slate-900">
+          {userToDelete.name}
+        </span>
+        ?
+      </p>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setUserToDelete(null)}
+          className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={() => {
+            setUserList(
+              userList.filter(
+                (user) => user.id !== userToDelete.id
+              )
+            );
+
+            setUserToDelete(null);
+          }}
+          className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Add User Modal */}
       {isAdding && (
