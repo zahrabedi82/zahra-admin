@@ -22,6 +22,7 @@ const Users = () => {
     status: "Active",
   });
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const filteredUsers = userList.filter((user) =>
     user.name.toLowerCase().includes(search.toLowerCase()),
   );
@@ -53,17 +54,17 @@ const Users = () => {
     return;
   }
 
-
   if (!newUser.email.trim()) {
     setError("Please enter the user's email.");
     return;
   }
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-if (!emailRegex.test(newUser.email)) {
-  setError("Please enter a valid email address.");
-  return;
-}
+  if (!emailRegex.test(newUser.email)) {
+    setError("Please enter a valid email address.");
+    return;
+  }
 
   if (!newUser.role.trim()) {
     setError("Please enter the user's role.");
@@ -89,10 +90,22 @@ if (!emailRegex.test(newUser.email)) {
 
   setError("");
   setIsAdding(false);
+
+  setSuccessMessage("User added successfully!");
+
+  setTimeout(() => {
+    setSuccessMessage("");
+  }, 3000);
 };
   return (
     <div>
+        {successMessage && (
+      <div className="fixed right-6 top-6 z-50 rounded-lg bg-green-600 px-5 py-3 text-white shadow-lg">
+        ✓ {successMessage}
+      </div>
+    )}
       <div className="mb-6 flex items-center justify-between">
+
         <h1 className="text-3xl font-bold">Users</h1>
 
         <button
@@ -172,10 +185,10 @@ if (!emailRegex.test(newUser.email)) {
 
             <div className="space-y-4">
               {error && (
-  <p className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-600">
-    {error}
-  </p>
-)}
+                <p className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-600">
+                  {error}
+                </p>
+              )}
               <div>
                 <label className="mb-1 block text-sm font-medium">Name</label>
 
@@ -276,22 +289,24 @@ if (!emailRegex.test(newUser.email)) {
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
               />
             </div>
+<div className="mt-6 flex justify-end gap-3">
+  <button
+    onClick={() => {
+      setIsAdding(false);
+      setError("");
+    }}
+    className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
+  >
+    Cancel
+  </button>
 
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setIsAdding(false)}
-                className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleAddUser}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-              >
-                Add
-              </button>
-            </div>
+  <button
+    onClick={handleAddUser}
+    className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+  >
+    Add
+  </button>
+</div>
           </div>
         </div>
       )}
