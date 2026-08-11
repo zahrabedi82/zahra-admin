@@ -4,196 +4,293 @@ import Table from "../../components/table/Table";
 import { users } from "../../data/users";
 
 const Users = () => {
+  // Search
   const [search, setSearch] = useState("");
 
+  // Users list
   const [userList, setUserList] = useState(users);
 
-  const [selectedUser, setSelectedUser] = useState<(typeof users)[0] | null>(
-    null,
-  );
+  // Edit user
+  const [selectedUser, setSelectedUser] = useState<
+    (typeof users)[0] | null
+  >(null);
 
   const [isEditing, setIsEditing] = useState(false);
 
+  // Add user
   const [isAdding, setIsAdding] = useState(false);
+
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
     role: "",
     status: "Active",
   });
+
+  // Error message
   const [error, setError] = useState("");
+
+  // Success message
   const [successMessage, setSuccessMessage] = useState("");
+
+  // Delete confirmation
   const [userToDelete, setUserToDelete] = useState<
-  (typeof users)[0] | null
->(null);
+    (typeof users)[0] | null
+  >(null);
+
+  // Search users
   const filteredUsers = userList.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase()),
+    user.name.toLowerCase().includes(search.toLowerCase())
   );
 
- const handleDelete = (user: (typeof users)[0]) => {
-  setUserToDelete(user);
-};
+  // ---------------- DELETE ----------------
+
+  const handleDelete = (user: (typeof users)[0]) => {
+    setUserToDelete(user);
+  };
+
+  const confirmDelete = () => {
+    if (!userToDelete) return;
+
+    setUserList(
+      userList.filter((user) => user.id !== userToDelete.id)
+    );
+
+    setUserToDelete(null);
+
+    setSuccessMessage("User deleted successfully!");
+
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
+  };
+
+  // ---------------- EDIT ----------------
 
   const handleEdit = (user: (typeof users)[0]) => {
     setSelectedUser(user);
     setIsEditing(true);
+    setError("");
   };
 
   const handleSave = () => {
     if (!selectedUser) return;
 
+    if (!selectedUser.name.trim()) {
+      setError("Please enter the user's name.");
+      return;
+    }
+
+    if (!selectedUser.email.trim()) {
+      setError("Please enter the user's email.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(selectedUser.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!selectedUser.role.trim()) {
+      setError("Please enter the user's role.");
+      return;
+    }
+
     setUserList(
       userList.map((user) =>
-        user.id === selectedUser.id ? selectedUser : user,
-      ),
+        user.id === selectedUser.id ? selectedUser : user
+      )
     );
 
     setSelectedUser(null);
     setIsEditing(false);
-  };
- const handleAddUser = () => {
-  if (!newUser.name.trim()) {
-    setError("Please enter the user's name.");
-    return;
-  }
+    setError("");
 
-  if (!newUser.email.trim()) {
-    setError("Please enter the user's email.");
-    return;
-  }
+    setSuccessMessage("User updated successfully!");
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!emailRegex.test(newUser.email)) {
-    setError("Please enter a valid email address.");
-    return;
-  }
-
-  if (!newUser.role.trim()) {
-    setError("Please enter the user's role.");
-    return;
-  }
-
-  const user = {
-    id: Date.now(),
-    name: newUser.name,
-    email: newUser.email,
-    role: newUser.role,
-    status: "Active",
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
   };
 
-  setUserList([...userList, user]);
+  // ---------------- ADD USER ----------------
 
-  setNewUser({
-    name: "",
-    email: "",
-    role: "",
-    status: "Active",
-  });
+  const handleAddUser = () => {
+    if (!newUser.name.trim()) {
+      setError("Please enter the user's name.");
+      return;
+    }
 
-  setError("");
-  setIsAdding(false);
+    if (!newUser.email.trim()) {
+      setError("Please enter the user's email.");
+      return;
+    }
 
-  setSuccessMessage("User added successfully!");
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  setTimeout(() => {
-    setSuccessMessage("");
-  }, 3000);
-};
+    if (!emailRegex.test(newUser.email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!newUser.role.trim()) {
+      setError("Please enter the user's role.");
+      return;
+    }
+
+    const user = {
+      id: Date.now(),
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      status: newUser.status,
+    };
+
+    setUserList([...userList, user]);
+
+    setNewUser({
+      name: "",
+      email: "",
+      role: "",
+      status: "Active",
+    });
+
+    setError("");
+    setIsAdding(false);
+
+    setSuccessMessage("User added successfully!");
+
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
+  };
+
+  // ---------------- UI ----------------
+
   return (
     <div>
-        {successMessage && (
-      <div className="fixed right-6 top-6 z-50 rounded-lg bg-green-600 px-5 py-3 text-white shadow-lg">
-        ✓ {successMessage}
-      </div>
-    )}
-      <div className="mb-6 flex items-center justify-between">
+      {/* Success Toast */}
+      {successMessage && (
+        <div className="fixed right-6 top-6 z-50 rounded-lg bg-green-600 px-5 py-3 text-white shadow-lg">
+          ✓ {successMessage}
+        </div>
+      )}
 
+      {/* Header */}
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold">Users</h1>
 
         <button
-          onClick={() => setIsAdding(true)}
-          className="rounded-lg bg-blue-600 px-5 py-2 text-white hover:bg-blue-700 transition"
+          onClick={() => {
+            setIsAdding(true);
+            setError("");
+          }}
+          className="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
         >
           + Add User
         </button>
       </div>
 
+      {/* Search */}
       <div className="mb-6">
         <input
           type="text"
           placeholder="Search users..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-80 rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 md:w-80"
         />
       </div>
 
-      <Table headers={["Name", "Email", "Role", "Status", "Actions"]}>
+      {/* Users Table */}
+      <Table
+        headers={[
+          "Name",
+          "Email",
+          "Role",
+          "Status",
+          "Actions",
+        ]}
+      >
         {filteredUsers.length > 0 ? (
           filteredUsers.map((user) => (
-            <tr key={user.id} className="border-b hover:bg-slate-50 transition">
+            <tr
+              key={user.id}
+              className="border-b transition hover:bg-slate-50"
+            >
+              {/* Name */}
               <td className="px-6 py-4">{user.name}</td>
 
+              {/* Email */}
               <td className="px-6 py-4">{user.email}</td>
 
+              {/* Role */}
               <td className="px-6 py-4">{user.role}</td>
 
+              {/* Status */}
               <td className="px-6 py-4">
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
                     user.status === "Active"
                       ? "bg-green-100 text-green-700"
-                      : user.status === "Inactive"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
+                      : "bg-red-100 text-red-700"
                   }`}
                 >
                   {user.status}
                 </span>
               </td>
 
+              {/* Actions */}
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
+                  {/* Edit */}
                   <button
                     onClick={() => handleEdit(user)}
-                    className="text-blue-600 hover:text-blue-800"
+                    className="text-blue-600 transition hover:text-blue-800"
                   >
                     <MdEdit size={20} />
                   </button>
 
-                 <button
-  onClick={() => handleDelete(user)}
-  className="text-red-600 hover:text-red-800"
->
-  <MdDelete size={20} />
-</button>
+                  {/* Delete */}
+                  <button
+                    onClick={() => handleDelete(user)}
+                    className="text-red-600 transition hover:text-red-800"
+                  >
+                    <MdDelete size={20} />
+                  </button>
                 </div>
               </td>
             </tr>
           ))
         ) : (
           <tr>
-            <td colSpan={5} className="py-8 text-center text-gray-500">
+            <td
+              colSpan={5}
+              className="py-8 text-center text-gray-500"
+            >
               No users found.
             </td>
           </tr>
         )}
       </Table>
-      {/* Edit Modal */}
+
+      {/* ================= EDIT MODAL ================= */}
+
       {isEditing && selectedUser && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h2 className="mb-6 text-2xl font-bold">Edit User</h2>
+            <h2 className="mb-6 text-2xl font-bold">
+              Edit User
+            </h2>
 
             <div className="space-y-4">
-              {error && (
-                <p className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-600">
-                  {error}
-                </p>
-              )}
+              {/* Name */}
               <div>
-                <label className="mb-1 block text-sm font-medium">Name</label>
+                <label className="mb-1 block text-sm font-medium">
+                  Name
+                </label>
 
                 <input
                   type="text"
@@ -208,8 +305,11 @@ const Users = () => {
                 />
               </div>
 
+              {/* Email */}
               <div>
-                <label className="mb-1 block text-sm font-medium">Email</label>
+                <label className="mb-1 block text-sm font-medium">
+                  Email
+                </label>
 
                 <input
                   type="email"
@@ -223,13 +323,62 @@ const Users = () => {
                   className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
                 />
               </div>
+
+              {/* Role */}
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Role
+                </label>
+
+                <input
+                  type="text"
+                  value={selectedUser.role}
+                  onChange={(e) =>
+                    setSelectedUser({
+                      ...selectedUser,
+                      role: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  Status
+                </label>
+
+                <select
+                  value={selectedUser.status}
+                  onChange={(e) =>
+                    setSelectedUser({
+                      ...selectedUser,
+                      status: e.target.value,
+                    })
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
+
+              {/* Error */}
+              {error && (
+                <p className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-600">
+                  {error}
+                </p>
+              )}
             </div>
 
+            {/* Buttons */}
             <div className="mt-6 flex justify-end gap-3">
               <button
                 onClick={() => {
                   setIsEditing(false);
                   setSelectedUser(null);
+                  setError("");
                 }}
                 className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
               >
@@ -246,56 +395,54 @@ const Users = () => {
           </div>
         </div>
       )}
-      {/* Delete Confirmation Modal */}
-{userToDelete && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-      <h2 className="mb-3 text-2xl font-bold">
-        Delete User
-      </h2>
 
-      <p className="mb-6 text-slate-600">
-        Are you sure you want to delete{" "}
-        <span className="font-semibold text-slate-900">
-          {userToDelete.name}
-        </span>
-        ?
-      </p>
+      {/* ================= DELETE MODAL ================= */}
 
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={() => setUserToDelete(null)}
-          className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={() => {
-            setUserList(
-              userList.filter(
-                (user) => user.id !== userToDelete.id
-              )
-            );
-
-            setUserToDelete(null);
-          }}
-          className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-      {/* Add User Modal */}
-      {isAdding && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+      {userToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h2 className="mb-6 text-2xl font-bold">Add User</h2>
+            <h2 className="mb-3 text-2xl font-bold">
+              Delete User
+            </h2>
+
+            <p className="mb-6 text-slate-600">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-slate-900">
+                {userToDelete.name}
+              </span>
+              ?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setUserToDelete(null)}
+                className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={confirmDelete}
+                className="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================= ADD USER MODAL ================= */}
+
+      {isAdding && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="mb-6 text-2xl font-bold">
+              Add User
+            </h2>
 
             <div className="space-y-4">
+              {/* Name */}
               <input
                 type="text"
                 placeholder="Name"
@@ -309,6 +456,7 @@ const Users = () => {
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
               />
 
+              {/* Email */}
               <input
                 type="email"
                 placeholder="Email"
@@ -321,6 +469,8 @@ const Users = () => {
                 }
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
               />
+
+              {/* Role */}
               <input
                 type="text"
                 placeholder="Role"
@@ -333,25 +483,49 @@ const Users = () => {
                 }
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
               />
-            </div>
-<div className="mt-6 flex justify-end gap-3">
-  <button
-    onClick={() => {
-      setIsAdding(false);
-      setError("");
-    }}
-    className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
-  >
-    Cancel
-  </button>
 
-  <button
-    onClick={handleAddUser}
-    className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-  >
-    Add
-  </button>
-</div>
+              {/* Status */}
+              <select
+                value={newUser.status}
+                onChange={(e) =>
+                  setNewUser({
+                    ...newUser,
+                    status: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+
+              {/* Error */}
+              {error && (
+                <p className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-600">
+                  {error}
+                </p>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsAdding(false);
+                  setError("");
+                }}
+                className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleAddUser}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </div>
           </div>
         </div>
       )}
