@@ -1,0 +1,42 @@
+export const products = [
+  {
+    id: 1,
+    name: "Laptop",
+    category: "Electronics",
+    price: 1200,
+    stock: 15,
+    status: "Active",
+  },
+  {
+    id: 2,
+    name: "Wireless Mouse",
+    category: "Accessories",
+    price: 35,
+    stock: 50,
+    status: "Active",
+  },
+  {
+    id: 3,
+    name: "Keyboard",
+    category: "Accessories",
+    price: 75,
+    stock: 30,
+    status: "Active",
+  },
+  {
+    id: 4,
+    name: "Monitor",
+    category: "Electronics",
+    price: 450,
+    stock: 8,
+    status: "Inactive",
+  },
+  {
+    id: 5,
+    name: "Headphones",
+    category: "Accessories",
+    price: 120,
+    stock: 20,
+    status: "Active",
+  },
+];
