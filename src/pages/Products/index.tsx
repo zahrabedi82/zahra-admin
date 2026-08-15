@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Table from "../../components/table/Table";
 import { products } from "../../data/products";
+import { MdDelete, MdEdit } from "react-icons/md";
 
 const Products = () => {
   const [search, setSearch] = useState("");
@@ -18,10 +19,12 @@ const Products = () => {
     status: "Active" as (typeof products)[0]["status"],
   });
 
+  // Search products
   const filteredProducts = productList.filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase())
+    product.name.toLowerCase().includes(search.toLowerCase()),
   );
 
+  // Add product
   const handleAddProduct = () => {
     if (
       !newProduct.name.trim() ||
@@ -52,6 +55,13 @@ const Products = () => {
     });
 
     setIsAdding(false);
+  };
+
+  // Delete product
+  const handleDeleteProduct = (id: number) => {
+    setProductList(
+      productList.filter((product) => product.id !== id),
+    );
   };
 
   return (
@@ -87,30 +97,36 @@ const Products = () => {
           "Price",
           "Stock",
           "Status",
+          "Actions",
         ]}
       >
         {filteredProducts.length > 0 ? (
-          filteredProducts.map((product: (typeof products)[0]) => (
+          filteredProducts.map((product) => (
             <tr
               key={product.id}
               className="border-b transition hover:bg-slate-50"
             >
+              {/* Name */}
               <td className="px-6 py-4">
                 {product.name}
               </td>
 
+              {/* Category */}
               <td className="px-6 py-4">
                 {product.category}
               </td>
 
+              {/* Price */}
               <td className="px-6 py-4">
                 ${product.price}
               </td>
 
+              {/* Stock */}
               <td className="px-6 py-4">
                 {product.stock}
               </td>
 
+              {/* Status */}
               <td className="px-6 py-4">
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold ${
@@ -122,12 +138,32 @@ const Products = () => {
                   {product.status}
                 </span>
               </td>
+
+              {/* Actions */}
+              <td className="px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <button
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <MdEdit size={20} />
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handleDeleteProduct(product.id)
+                    }
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <MdDelete size={20} />
+                  </button>
+                </div>
+              </td>
             </tr>
           ))
         ) : (
           <tr>
             <td
-              colSpan={5}
+              colSpan={6}
               className="py-8 text-center text-gray-500"
             >
               No products found.
@@ -207,7 +243,8 @@ const Products = () => {
                 onChange={(e) =>
                   setNewProduct({
                     ...newProduct,
-                    status: e.target.value as (typeof products)[0]["status"],
+                    status:
+                      e.target.value as (typeof products)[0]["status"],
                   })
                 }
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
