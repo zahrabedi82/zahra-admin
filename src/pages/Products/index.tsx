@@ -10,6 +10,11 @@ const Products = () => {
   const [productList, setProductList] = useState(products);
 
   const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+const [selectedProduct, setSelectedProduct] = useState<
+  (typeof products)[0] | null
+>(null);
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -56,14 +61,36 @@ const Products = () => {
 
     setIsAdding(false);
   };
+const handleSaveProduct = () => {
+  if (!selectedProduct) return;
 
+  setProductList(
+    productList.map((product) =>
+      product.id === selectedProduct.id
+        ? selectedProduct
+        : product,
+    ),
+  );
+
+  setIsEditing(false);
+  setSelectedProduct(null);
+};
   // Delete product
-  const handleDeleteProduct = (id: number) => {
-    setProductList(
-      productList.filter((product) => product.id !== id),
-    );
-  };
+const handleDeleteProduct = (id: number) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this product?"
+  );
 
+  if (!confirmed) return;
+
+  setProductList(
+    productList.filter((product) => product.id !== id),
+  );
+};
+const handleEditProduct = (product: (typeof products)[0]) => {
+  setSelectedProduct(product);
+  setIsEditing(true);
+};
   return (
     <div>
       {/* Header */}
@@ -142,11 +169,12 @@ const Products = () => {
               {/* Actions */}
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-                  <button
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    <MdEdit size={20} />
-                  </button>
+              <button
+  onClick={() => handleEditProduct(product)}
+  className="text-blue-600 hover:text-blue-800"
+>
+  <MdEdit size={20} />
+</button>
 
                   <button
                     onClick={() =>
@@ -171,6 +199,106 @@ const Products = () => {
           </tr>
         )}
       </Table>
+      {/* Edit Product Modal */}
+{isEditing && selectedProduct && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+      <h2 className="mb-6 text-2xl font-bold">
+        Edit Product
+      </h2>
+
+      <div className="space-y-4">
+        {/* Name */}
+        <input
+          type="text"
+          value={selectedProduct.name}
+          onChange={(e) =>
+            setSelectedProduct({
+              ...selectedProduct,
+              name: e.target.value,
+            })
+          }
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+        />
+
+        {/* Category */}
+        <input
+          type="text"
+          value={selectedProduct.category}
+          onChange={(e) =>
+            setSelectedProduct({
+              ...selectedProduct,
+              category: e.target.value,
+            })
+          }
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+        />
+
+        {/* Price */}
+        <input
+          type="number"
+          value={selectedProduct.price}
+          onChange={(e) =>
+            setSelectedProduct({
+              ...selectedProduct,
+              price: Number(e.target.value),
+            })
+          }
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+        />
+
+        {/* Stock */}
+        <input
+          type="number"
+          value={selectedProduct.stock}
+          onChange={(e) =>
+            setSelectedProduct({
+              ...selectedProduct,
+              stock: Number(e.target.value),
+            })
+          }
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+        />
+
+        {/* Status */}
+        <select
+          value={selectedProduct.status}
+          onChange={(e) =>
+            setSelectedProduct({
+              ...selectedProduct,
+              status:
+                e.target.value as (typeof products)[0]["status"],
+            })
+          }
+          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+        >
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+
+      {/* Buttons */}
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          onClick={() => {
+            setIsEditing(false);
+            setSelectedProduct(null);
+          }}
+          className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+
+   <button
+  onClick={handleSaveProduct}
+  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+>
+  Save
+</button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Add Product Modal */}
       {isAdding && (
