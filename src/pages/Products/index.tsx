@@ -149,9 +149,19 @@ const handleEditProduct = (product: (typeof products)[0]) => {
               </td>
 
               {/* Stock */}
-              <td className="px-6 py-4">
-                {product.stock}
-              </td>
+           <td className="px-6 py-4">
+  <span
+    className={
+      product.stock === 0
+        ? "font-semibold text-red-600"
+        : product.stock < 10
+          ? "font-semibold text-yellow-600"
+          : "text-slate-700"
+    }
+  >
+    {product.stock}
+  </span>
+</td>
 
               {/* Status */}
               <td className="px-6 py-4">
@@ -272,8 +282,9 @@ const handleEditProduct = (product: (typeof products)[0]) => {
           }
           className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
         >
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
+        <option value="Active">Active</option>
+<option value="Inactive">Inactive</option>
+<option value="Out of Stock">Out of Stock</option>
         </select>
       </div>
 
@@ -377,8 +388,9 @@ const handleEditProduct = (product: (typeof products)[0]) => {
                 }
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
               >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+              <option value="Active">Active</option>
+<option value="Inactive">Inactive</option>
+<option value="Out of Stock">Out of Stock</option>
               </select>
             </div>
 
