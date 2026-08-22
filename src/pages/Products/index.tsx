@@ -6,6 +6,7 @@ import { MdDelete, MdEdit } from "react-icons/md";
 const Products = () => {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
+  const [statusFilter, setStatusFilter] = useState("All");
   const [productList, setProductList] = useState(products);
 
   const [isAdding, setIsAdding] = useState(false);
@@ -24,9 +25,30 @@ const Products = () => {
   });
 
   // Search products
-  const filteredProducts = productList.filter((product) =>
+const filteredProducts = [...productList]
+  .filter((product) =>
     product.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  )
+  .filter((product) =>
+    statusFilter === "All"
+      ? true
+      : product.status === statusFilter,
+  )
+  .sort((a, b) => {
+    if (sortBy === "name") {
+      return a.name.localeCompare(b.name);
+    }
+
+    if (sortBy === "price") {
+      return a.price - b.price;
+    }
+
+    if (sortBy === "stock") {
+      return a.stock - b.stock;
+    }
+
+    return 0;
+  });
 
   // Add product
   const handleAddProduct = () => {
@@ -100,7 +122,7 @@ const Products = () => {
         </button>
       </div>
 
-      {/* Search */}
+      {/* Search, Sort & Filter */}
       <div className="mb-6 flex flex-wrap gap-4">
         <input
           type="text"
@@ -118,6 +140,17 @@ const Products = () => {
           <option value="name">Sort by Name</option>
           <option value="price">Sort by Price</option>
           <option value="stock">Sort by Stock</option>
+        </select>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="All">All Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Out of Stock">Out of Stock</option>
         </select>
       </div>
 
