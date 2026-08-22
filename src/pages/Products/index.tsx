@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Table from "../../components/table/Table";
 import { products } from "../../data/products";
@@ -6,15 +5,15 @@ import { MdDelete, MdEdit } from "react-icons/md";
 
 const Products = () => {
   const [search, setSearch] = useState("");
-
+  const [sortBy, setSortBy] = useState("name");
   const [productList, setProductList] = useState(products);
 
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-const [selectedProduct, setSelectedProduct] = useState<
-  (typeof products)[0] | null
->(null);
+  const [selectedProduct, setSelectedProduct] = useState<
+    (typeof products)[0] | null
+  >(null);
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -61,36 +60,32 @@ const [selectedProduct, setSelectedProduct] = useState<
 
     setIsAdding(false);
   };
-const handleSaveProduct = () => {
-  if (!selectedProduct) return;
+  const handleSaveProduct = () => {
+    if (!selectedProduct) return;
 
-  setProductList(
-    productList.map((product) =>
-      product.id === selectedProduct.id
-        ? selectedProduct
-        : product,
-    ),
-  );
+    setProductList(
+      productList.map((product) =>
+        product.id === selectedProduct.id ? selectedProduct : product,
+      ),
+    );
 
-  setIsEditing(false);
-  setSelectedProduct(null);
-};
+    setIsEditing(false);
+    setSelectedProduct(null);
+  };
   // Delete product
-const handleDeleteProduct = (id: number) => {
-  const confirmed = window.confirm(
-    "Are you sure you want to delete this product?"
-  );
+  const handleDeleteProduct = (id: number) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this product?",
+    );
 
-  if (!confirmed) return;
+    if (!confirmed) return;
 
-  setProductList(
-    productList.filter((product) => product.id !== id),
-  );
-};
-const handleEditProduct = (product: (typeof products)[0]) => {
-  setSelectedProduct(product);
-  setIsEditing(true);
-};
+    setProductList(productList.filter((product) => product.id !== id));
+  };
+  const handleEditProduct = (product: (typeof products)[0]) => {
+    setSelectedProduct(product);
+    setIsEditing(true);
+  };
   return (
     <div>
       {/* Header */}
@@ -106,7 +101,7 @@ const handleEditProduct = (product: (typeof products)[0]) => {
       </div>
 
       {/* Search */}
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap gap-4">
         <input
           type="text"
           placeholder="Search products..."
@@ -114,18 +109,21 @@ const handleEditProduct = (product: (typeof products)[0]) => {
           onChange={(e) => setSearch(e.target.value)}
           className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 md:w-80"
         />
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="name">Sort by Name</option>
+          <option value="price">Sort by Price</option>
+          <option value="stock">Sort by Stock</option>
+        </select>
       </div>
 
       {/* Products Table */}
       <Table
-        headers={[
-          "Name",
-          "Category",
-          "Price",
-          "Stock",
-          "Status",
-          "Actions",
-        ]}
+        headers={["Name", "Category", "Price", "Stock", "Status", "Actions"]}
       >
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
@@ -134,34 +132,28 @@ const handleEditProduct = (product: (typeof products)[0]) => {
               className="border-b transition hover:bg-slate-50"
             >
               {/* Name */}
-              <td className="px-6 py-4">
-                {product.name}
-              </td>
+              <td className="px-6 py-4">{product.name}</td>
 
               {/* Category */}
-              <td className="px-6 py-4">
-                {product.category}
-              </td>
+              <td className="px-6 py-4">{product.category}</td>
 
               {/* Price */}
-              <td className="px-6 py-4">
-                ${product.price}
-              </td>
+              <td className="px-6 py-4">${product.price}</td>
 
               {/* Stock */}
-           <td className="px-6 py-4">
-  <span
-    className={
-      product.stock === 0
-        ? "font-semibold text-red-600"
-        : product.stock < 10
-          ? "font-semibold text-yellow-600"
-          : "text-slate-700"
-    }
-  >
-    {product.stock}
-  </span>
-</td>
+              <td className="px-6 py-4">
+                <span
+                  className={
+                    product.stock === 0
+                      ? "font-semibold text-red-600"
+                      : product.stock < 10
+                        ? "font-semibold text-yellow-600"
+                        : "text-slate-700"
+                  }
+                >
+                  {product.stock}
+                </span>
+              </td>
 
               {/* Status */}
               <td className="px-6 py-4">
@@ -179,17 +171,15 @@ const handleEditProduct = (product: (typeof products)[0]) => {
               {/* Actions */}
               <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
-              <button
-  onClick={() => handleEditProduct(product)}
-  className="text-blue-600 hover:text-blue-800"
->
-  <MdEdit size={20} />
-</button>
+                  <button
+                    onClick={() => handleEditProduct(product)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <MdEdit size={20} />
+                  </button>
 
                   <button
-                    onClick={() =>
-                      handleDeleteProduct(product.id)
-                    }
+                    onClick={() => handleDeleteProduct(product.id)}
                     className="text-red-600 hover:text-red-800"
                   >
                     <MdDelete size={20} />
@@ -200,124 +190,116 @@ const handleEditProduct = (product: (typeof products)[0]) => {
           ))
         ) : (
           <tr>
-            <td
-              colSpan={6}
-              className="py-8 text-center text-gray-500"
-            >
+            <td colSpan={6} className="py-8 text-center text-gray-500">
               No products found.
             </td>
           </tr>
         )}
       </Table>
       {/* Edit Product Modal */}
-{isEditing && selectedProduct && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/50">
-    <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-      <h2 className="mb-6 text-2xl font-bold">
-        Edit Product
-      </h2>
+      {isEditing && selectedProduct && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="mb-6 text-2xl font-bold">Edit Product</h2>
 
-      <div className="space-y-4">
-        {/* Name */}
-        <input
-          type="text"
-          value={selectedProduct.name}
-          onChange={(e) =>
-            setSelectedProduct({
-              ...selectedProduct,
-              name: e.target.value,
-            })
-          }
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-        />
+            <div className="space-y-4">
+              {/* Name */}
+              <input
+                type="text"
+                value={selectedProduct.name}
+                onChange={(e) =>
+                  setSelectedProduct({
+                    ...selectedProduct,
+                    name: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              />
 
-        {/* Category */}
-        <input
-          type="text"
-          value={selectedProduct.category}
-          onChange={(e) =>
-            setSelectedProduct({
-              ...selectedProduct,
-              category: e.target.value,
-            })
-          }
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-        />
+              {/* Category */}
+              <input
+                type="text"
+                value={selectedProduct.category}
+                onChange={(e) =>
+                  setSelectedProduct({
+                    ...selectedProduct,
+                    category: e.target.value,
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              />
 
-        {/* Price */}
-        <input
-          type="number"
-          value={selectedProduct.price}
-          onChange={(e) =>
-            setSelectedProduct({
-              ...selectedProduct,
-              price: Number(e.target.value),
-            })
-          }
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-        />
+              {/* Price */}
+              <input
+                type="number"
+                value={selectedProduct.price}
+                onChange={(e) =>
+                  setSelectedProduct({
+                    ...selectedProduct,
+                    price: Number(e.target.value),
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              />
 
-        {/* Stock */}
-        <input
-          type="number"
-          value={selectedProduct.stock}
-          onChange={(e) =>
-            setSelectedProduct({
-              ...selectedProduct,
-              stock: Number(e.target.value),
-            })
-          }
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-        />
+              {/* Stock */}
+              <input
+                type="number"
+                value={selectedProduct.stock}
+                onChange={(e) =>
+                  setSelectedProduct({
+                    ...selectedProduct,
+                    stock: Number(e.target.value),
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              />
 
-        {/* Status */}
-        <select
-          value={selectedProduct.status}
-          onChange={(e) =>
-            setSelectedProduct({
-              ...selectedProduct,
-              status:
-                e.target.value as (typeof products)[0]["status"],
-            })
-          }
-          className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
-        >
-        <option value="Active">Active</option>
-<option value="Inactive">Inactive</option>
-<option value="Out of Stock">Out of Stock</option>
-        </select>
-      </div>
+              {/* Status */}
+              <select
+                value={selectedProduct.status}
+                onChange={(e) =>
+                  setSelectedProduct({
+                    ...selectedProduct,
+                    status: e.target.value as (typeof products)[0]["status"],
+                  })
+                }
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Out of Stock">Out of Stock</option>
+              </select>
+            </div>
 
-      {/* Buttons */}
-      <div className="mt-6 flex justify-end gap-3">
-        <button
-          onClick={() => {
-            setIsEditing(false);
-            setSelectedProduct(null);
-          }}
-          className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
-        >
-          Cancel
-        </button>
+            {/* Buttons */}
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setSelectedProduct(null);
+                }}
+                className="rounded-lg bg-gray-200 px-4 py-2 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
 
-   <button
-  onClick={handleSaveProduct}
-  className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
->
-  Save
-</button>
-      </div>
-    </div>
-  </div>
-)}
+              <button
+                onClick={handleSaveProduct}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Product Modal */}
       {isAdding && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h2 className="mb-6 text-2xl font-bold">
-              Add Product
-            </h2>
+            <h2 className="mb-6 text-2xl font-bold">Add Product</h2>
 
             <div className="space-y-4">
               {/* Name */}
@@ -382,15 +364,14 @@ const handleEditProduct = (product: (typeof products)[0]) => {
                 onChange={(e) =>
                   setNewProduct({
                     ...newProduct,
-                    status:
-                      e.target.value as (typeof products)[0]["status"],
+                    status: e.target.value as (typeof products)[0]["status"],
                   })
                 }
                 className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none"
               >
-              <option value="Active">Active</option>
-<option value="Inactive">Inactive</option>
-<option value="Out of Stock">Out of Stock</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Out of Stock">Out of Stock</option>
               </select>
             </div>
 
