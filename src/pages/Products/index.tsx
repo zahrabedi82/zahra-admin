@@ -8,7 +8,8 @@ const Products = () => {
   const [sortBy, setSortBy] = useState("name");
   const [statusFilter, setStatusFilter] = useState("All");
   const [productList, setProductList] = useState(products);
-
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 5;
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -25,30 +26,37 @@ const Products = () => {
   });
 
   // Search products
-const filteredProducts = [...productList]
-  .filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase()),
-  )
-  .filter((product) =>
-    statusFilter === "All"
-      ? true
-      : product.status === statusFilter,
-  )
-  .sort((a, b) => {
-    if (sortBy === "name") {
-      return a.name.localeCompare(b.name);
-    }
+  const filteredProducts = [...productList]
+    .filter((product) =>
+      product.name.toLowerCase().includes(search.toLowerCase()),
+    )
 
-    if (sortBy === "price") {
-      return a.price - b.price;
-    }
+    .filter((product) =>
+      statusFilter === "All" ? true : product.status === statusFilter,
+    )
+    .sort((a, b) => {
+      if (sortBy === "name") {
+        return a.name.localeCompare(b.name);
+      }
 
-    if (sortBy === "stock") {
-      return a.stock - b.stock;
-    }
+      if (sortBy === "price") {
+        return a.price - b.price;
+      }
 
-    return 0;
-  });
+      if (sortBy === "stock") {
+        return a.stock - b.stock;
+      }
+
+      return 0;
+    });
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
+
+  const startIndex = (currentPage - 1) * productsPerPage;
+
+  const currentProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + productsPerPage,
+  );
 
   // Add product
   const handleAddProduct = () => {
@@ -128,13 +136,19 @@ const filteredProducts = [...productList]
           type="text"
           placeholder="Search products..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
           className="w-full rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500 md:w-80"
         />
 
         <select
           value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
+          onChange={(e) => {
+            setSortBy(e.target.value);
+            setCurrentPage(1);
+          }}
           className="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="name">Sort by Name</option>
@@ -144,7 +158,10 @@ const filteredProducts = [...productList]
 
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setCurrentPage(1);
+          }}
           className="rounded-lg border border-slate-300 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="All">All Status</option>
@@ -158,8 +175,8 @@ const filteredProducts = [...productList]
       <Table
         headers={["Name", "Category", "Price", "Stock", "Status", "Actions"]}
       >
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
+        {currentProducts.length > 0 ? (
+          currentProducts.map((product) => (
             <tr
               key={product.id}
               className="border-b transition hover:bg-slate-50"
@@ -229,6 +246,44 @@ const filteredProducts = [...productList]
           </tr>
         )}
       </Table>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-center gap-2">
+          <button
+            onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
+            disabled={currentPage === 1}
+            className="rounded-lg border border-slate-300 px-4 py-2 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+            (page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`rounded-lg px-4 py-2 transition ${
+                  currentPage === page
+                    ? "bg-blue-600 text-white"
+                    : "border border-slate-300 hover:bg-slate-100"
+                }`}
+              >
+                {page}
+              </button>
+            ),
+          )}
+
+          <button
+            onClick={() =>
+              setCurrentPage((page) => Math.min(page + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+            className="rounded-lg border border-slate-300 px-4 py-2 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
       {/* Edit Product Modal */}
       {isEditing && selectedProduct && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50">
