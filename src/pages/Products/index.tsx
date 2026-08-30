@@ -64,7 +64,9 @@ const Products = () => {
       !newProduct.name.trim() ||
       !newProduct.category.trim() ||
       !newProduct.price ||
-      !newProduct.stock
+      !newProduct.stock ||
+      Number(newProduct.price) < 0 ||
+      Number(newProduct.stock) < 0
     ) {
       return;
     }
