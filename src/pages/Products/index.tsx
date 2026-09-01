@@ -12,7 +12,7 @@ const Products = () => {
   const productsPerPage = 5;
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
+  const [error, setError] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<
     (typeof products)[0] | null
   >(null);
@@ -59,15 +59,36 @@ const Products = () => {
   );
 
   // Add product
+
+  // Add product
   const handleAddProduct = () => {
-    if (
-      !newProduct.name.trim() ||
-      !newProduct.category.trim() ||
-      !newProduct.price ||
-      !newProduct.stock ||
-      Number(newProduct.price) < 0 ||
-      Number(newProduct.stock) < 0
-    ) {
+    if (!newProduct.name.trim()) {
+      setError("Product name is required.");
+      return;
+    }
+
+    if (!newProduct.category.trim()) {
+      setError("Category is required.");
+      return;
+    }
+
+    if (!newProduct.price) {
+      setError("Price is required.");
+      return;
+    }
+
+    if (Number(newProduct.price) < 0) {
+      setError("Price cannot be negative.");
+      return;
+    }
+
+    if (!newProduct.stock) {
+      setError("Stock is required.");
+      return;
+    }
+
+    if (Number(newProduct.stock) < 0) {
+      setError("Stock cannot be negative.");
       return;
     }
 
@@ -90,6 +111,7 @@ const Products = () => {
       status: "Active" as (typeof products)[0]["status"],
     });
 
+    setError("");
     setIsAdding(false);
   };
   const handleSaveProduct = () => {
@@ -124,12 +146,15 @@ const Products = () => {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold">Products</h1>
 
-        <button
-          onClick={() => setIsAdding(true)}
-          className="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
-        >
-          + Add Product
-        </button>
+   <button
+  onClick={() => {
+    setError("");
+    setIsAdding(true);
+  }}
+  className="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
+>
+  + Add Product
+</button>
       </div>
 
       {/* Search, Sort & Filter */}
@@ -390,7 +415,11 @@ const Products = () => {
         <div className="fixed inset-0 flex items-center justify-center bg-black/50">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <h2 className="mb-6 text-2xl font-bold">Add Product</h2>
-
+            {error && (
+              <p className="rounded-lg bg-red-100 px-4 py-2 text-sm text-red-700">
+                {error}
+              </p>
+            )}
             <div className="space-y-4">
               {/* Name */}
               <input
