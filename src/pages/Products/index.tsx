@@ -98,7 +98,8 @@ const Products = () => {
       category: newProduct.category,
       price: Number(newProduct.price),
       stock: Number(newProduct.stock),
-      status: newProduct.status,
+      status:
+        Number(newProduct.stock) === 0 ? "Out of Stock" : newProduct.status,
     };
 
     setProductList([...productList, product]);
@@ -146,15 +147,15 @@ const Products = () => {
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold">Products</h1>
 
-   <button
-  onClick={() => {
-    setError("");
-    setIsAdding(true);
-  }}
-  className="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
->
-  + Add Product
-</button>
+        <button
+          onClick={() => {
+            setError("");
+            setIsAdding(true);
+          }}
+          className="rounded-lg bg-blue-600 px-5 py-2 text-white transition hover:bg-blue-700"
+        >
+          + Add Product
+        </button>
       </div>
 
       {/* Search, Sort & Filter */}
