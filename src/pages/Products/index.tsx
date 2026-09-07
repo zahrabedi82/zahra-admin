@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table from "../../components/table/Table";
 import { products } from "../../data/products";
 import { MdDelete, MdEdit } from "react-icons/md";
@@ -7,7 +7,14 @@ const Products = () => {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
   const [statusFilter, setStatusFilter] = useState("All");
-  const [productList, setProductList] = useState(products);
+const [productList, setProductList] = useState<(typeof products)[0][]>(() => {
+  const savedProducts = localStorage.getItem("products");
+
+  return savedProducts ? JSON.parse(savedProducts) : products;
+});
+useEffect(() => {
+  localStorage.setItem("products", JSON.stringify(productList));
+}, [productList]);
   const [currentPage, setCurrentPage] = useState(1);
   const productsPerPage = 5;
   const [isAdding, setIsAdding] = useState(false);
