@@ -78,7 +78,16 @@ useEffect(() => {
       setError("Category is required.");
       return;
     }
+const duplicateProduct = productList.some(
+  (product) =>
+    product.name.toLowerCase().trim() ===
+    newProduct.name.toLowerCase().trim(),
+);
 
+if (duplicateProduct) {
+  setError("A product with this name already exists.");
+  return;
+}
     if (!newProduct.price) {
       setError("Price is required.");
       return;
@@ -98,7 +107,15 @@ useEffect(() => {
       setError("Stock cannot be negative.");
       return;
     }
+if (!Number.isInteger(Number(newProduct.price))) {
+  setError("Price must be a whole number.");
+  return;
+}
 
+if (!Number.isInteger(Number(newProduct.stock))) {
+  setError("Stock must be a whole number.");
+  return;
+}
     const product = {
       id: Date.now(),
       name: newProduct.name,
@@ -123,17 +140,55 @@ useEffect(() => {
     setIsAdding(false);
   };
   const handleSaveProduct = () => {
-    if (!selectedProduct) return;
+  if (!selectedProduct) return;
 
-    setProductList(
-      productList.map((product) =>
-        product.id === selectedProduct.id ? selectedProduct : product,
-      ),
-    );
+  if (!selectedProduct.name.trim()) {
+    alert("Product name is required.");
+    return;
+  }
 
-    setIsEditing(false);
-    setSelectedProduct(null);
+  if (!selectedProduct.category.trim()) {
+    alert("Category is required.");
+    return;
+  }
+
+  if (selectedProduct.price < 0) {
+    alert("Price cannot be negative.");
+    return;
+  }
+
+  if (selectedProduct.stock < 0) {
+    alert("Stock cannot be negative.");
+    return;
+  }
+
+  if (!Number.isInteger(selectedProduct.price)) {
+    alert("Price must be a whole number.");
+    return;
+  }
+
+  if (!Number.isInteger(selectedProduct.stock)) {
+    alert("Stock must be a whole number.");
+    return;
+  }
+
+  const updatedProduct = {
+    ...selectedProduct,
+    status:
+      selectedProduct.stock === 0
+        ? "Out of Stock"
+        : selectedProduct.status,
   };
+
+  setProductList(
+    productList.map((product) =>
+      product.id === selectedProduct.id ? updatedProduct : product,
+    ),
+  );
+
+  setIsEditing(false);
+  setSelectedProduct(null);
+};
   // Delete product
   const handleDeleteProduct = (id: number) => {
     const confirmed = window.confirm(
@@ -204,6 +259,9 @@ useEffect(() => {
           <option value="Inactive">Inactive</option>
           <option value="Out of Stock">Out of Stock</option>
         </select>
+      </div>
+        <div className="mb-4 text-sm text-slate-500">
+        Showing {currentProducts.length} of {filteredProducts.length} products
       </div>
 
       {/* Products Table */}
