@@ -141,7 +141,17 @@ if (!Number.isInteger(Number(newProduct.stock))) {
   };
   const handleSaveProduct = () => {
   if (!selectedProduct) return;
+const duplicateProduct = productList.some(
+  (product) =>
+    product.id !== selectedProduct.id &&
+    product.name.toLowerCase().trim() ===
+      selectedProduct.name.toLowerCase().trim(),
+);
 
+if (duplicateProduct) {
+  alert("A product with this name already exists.");
+  return;
+}
   if (!selectedProduct.name.trim()) {
     alert("Product name is required.");
     return;
