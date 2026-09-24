@@ -122,6 +122,8 @@ const Orders = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
   const ordersPerPage = 5;
 
   const filteredOrders = orders.filter((order) => {
@@ -174,7 +176,6 @@ const Orders = () => {
 
       {/* Search & Filter */}
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        {/* Search */}
         <div className="relative w-full max-w-sm">
           <input
             type="text"
@@ -201,7 +202,6 @@ const Orders = () => {
           )}
         </div>
 
-        {/* Status Filter */}
         <select
           value={statusFilter}
           onChange={(e) => {
@@ -241,8 +241,13 @@ const Orders = () => {
               className="border-b transition hover:bg-slate-50"
             >
               {/* Order */}
-              <td className="px-6 py-4 font-semibold text-slate-700">
-                {order.orderNumber}
+              <td className="px-6 py-4">
+                <button
+                  onClick={() => setSelectedOrder(order)}
+                  className="font-semibold text-blue-600 transition hover:text-blue-800 hover:underline"
+                >
+                  {order.orderNumber}
+                </button>
               </td>
 
               {/* Customer */}
@@ -321,6 +326,90 @@ const Orders = () => {
           >
             Next
           </button>
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {selectedOrder && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onClick={() => setSelectedOrder(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold">Order Details</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {selectedOrder.orderNumber}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setSelectedOrder(null)}
+                className="rounded-lg px-3 py-2 text-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+                title="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="text-sm text-slate-500">Customer</span>
+                <span className="font-medium text-slate-800">
+                  {selectedOrder.customer}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="text-sm text-slate-500">Email</span>
+                <span className="text-sm text-slate-800">
+                  {selectedOrder.email}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="text-sm text-slate-500">Product</span>
+                <span className="font-medium text-slate-800">
+                  {selectedOrder.product}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="text-sm text-slate-500">Amount</span>
+                <span className="font-semibold text-slate-800">
+                  ${selectedOrder.amount}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between border-b pb-3">
+                <span className="text-sm text-slate-500">Date</span>
+                <span className="text-slate-800">{selectedOrder.date}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-500">Status</span>
+
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(
+                    selectedOrder.status,
+                  )}`}
+                >
+                  {selectedOrder.status}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setSelectedOrder(null)}
+              className="mt-6 w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>
