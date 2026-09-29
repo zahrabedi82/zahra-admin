@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Table from "../../components/table/Table";
 
 type OrderStatus = "Pending" | "Processing" | "Completed" | "Cancelled";
@@ -14,7 +14,7 @@ type Order = {
   status: OrderStatus;
 };
 
-const orders: Order[] = [
+const initialOrders: Order[] = [
   {
     id: 1,
     orderNumber: "#ORD-1001",
@@ -121,12 +121,29 @@ const Orders = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+const [orderList, setOrderList] = useState<Order[]>(() => {
+  const savedOrders = localStorage.getItem("orders");
+
+  if (savedOrders) {
+    try {
+      return JSON.parse(savedOrders);
+    } catch {
+      return initialOrders;
+    }
+  }
+
+  return initialOrders;
+});
+
+useEffect(() => {
+  localStorage.setItem("orders", JSON.stringify(orderList));
+}, [orderList]);
+
 
   const ordersPerPage = 5;
 
-  const filteredOrders = orders.filter((order) => {
+  const filteredOrders = orderList.filter((order) => {
     const matchesSearch =
       order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
       order.customer.toLowerCase().includes(search.toLowerCase()) ||
@@ -164,11 +181,24 @@ const Orders = () => {
     return "bg-red-100 text-red-700";
   };
 
+  const handleStatusChange = (id: number, status: OrderStatus) => {
+    setOrderList((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === id ? { ...order, status } : order,
+      ),
+    );
+
+    setSelectedOrder((prevOrder) =>
+      prevOrder?.id === id ? { ...prevOrder, status } : prevOrder,
+    );
+  };
+
   return (
     <div>
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Orders</h1>
+
         <p className="mt-1 text-sm text-slate-500">
           Manage and track customer orders
         </p>
@@ -225,14 +255,7 @@ const Orders = () => {
 
       {/* Orders Table */}
       <Table
-        headers={[
-          "Order",
-          "Customer",
-          "Product",
-          "Amount",
-          "Date",
-          "Status",
-        ]}
+        headers={["Order", "Customer", "Product", "Amount", "Date", "Status"]}
       >
         {currentOrders.length > 0 ? (
           currentOrders.map((order) => (
@@ -253,9 +276,8 @@ const Orders = () => {
               {/* Customer */}
               <td className="px-6 py-4">
                 <div>
-                  <p className="font-medium text-slate-800">
-                    {order.customer}
-                  </p>
+                  <p className="font-medium text-slate-800">{order.customer}</p>
+
                   <p className="text-sm text-slate-500">{order.email}</p>
                 </div>
               </td>
@@ -271,13 +293,21 @@ const Orders = () => {
 
               {/* Status */}
               <td className="px-6 py-4">
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(
+                <select
+                  value={order.status}
+                  onChange={(e) =>
+                    handleStatusChange(order.id, e.target.value as OrderStatus)
+                  }
+                  className={`cursor-pointer rounded-full border-0 px-3 py-1 text-xs font-semibold outline-none ${getStatusStyle(
                     order.status,
                   )}`}
+                  aria-label={`Change status for ${order.orderNumber}`}
                 >
-                  {order.status}
-                </span>
+                  <option value="Pending">Pending</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
               </td>
             </tr>
           ))
@@ -339,9 +369,11 @@ const Orders = () => {
             className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Modal Header */}
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-2xl font-bold">Order Details</h2>
+
                 <p className="mt-1 text-sm text-slate-500">
                   {selectedOrder.orderNumber}
                 </p>
@@ -356,9 +388,11 @@ const Orders = () => {
               </button>
             </div>
 
+            {/* Order Information */}
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b pb-3">
                 <span className="text-sm text-slate-500">Customer</span>
+
                 <span className="font-medium text-slate-800">
                   {selectedOrder.customer}
                 </span>
@@ -366,6 +400,7 @@ const Orders = () => {
 
               <div className="flex items-center justify-between border-b pb-3">
                 <span className="text-sm text-slate-500">Email</span>
+
                 <span className="text-sm text-slate-800">
                   {selectedOrder.email}
                 </span>
@@ -373,6 +408,7 @@ const Orders = () => {
 
               <div className="flex items-center justify-between border-b pb-3">
                 <span className="text-sm text-slate-500">Product</span>
+
                 <span className="font-medium text-slate-800">
                   {selectedOrder.product}
                 </span>
@@ -380,6 +416,7 @@ const Orders = () => {
 
               <div className="flex items-center justify-between border-b pb-3">
                 <span className="text-sm text-slate-500">Amount</span>
+
                 <span className="font-semibold text-slate-800">
                   ${selectedOrder.amount}
                 </span>
@@ -387,22 +424,35 @@ const Orders = () => {
 
               <div className="flex items-center justify-between border-b pb-3">
                 <span className="text-sm text-slate-500">Date</span>
+
                 <span className="text-slate-800">{selectedOrder.date}</span>
               </div>
 
+              {/* Status */}
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-500">Status</span>
 
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${getStatusStyle(
+                <select
+                  value={selectedOrder.status}
+                  onChange={(e) =>
+                    handleStatusChange(
+                      selectedOrder.id,
+                      e.target.value as OrderStatus,
+                    )
+                  }
+                  className={`cursor-pointer rounded-full border-0 px-3 py-1 text-xs font-semibold outline-none ${getStatusStyle(
                     selectedOrder.status,
                   )}`}
                 >
-                  {selectedOrder.status}
-                </span>
+                  <option value="Pending">Pending</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
               </div>
             </div>
 
+            {/* Close Button */}
             <button
               onClick={() => setSelectedOrder(null)}
               className="mt-6 w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
