@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Table from "../../components/table/Table";
-
+import { MdDelete } from "react-icons/md";
 type OrderStatus = "Pending" | "Processing" | "Completed" | "Cancelled";
 
 type Order = {
@@ -192,7 +192,23 @@ useEffect(() => {
       prevOrder?.id === id ? { ...prevOrder, status } : prevOrder,
     );
   };
+const handleDeleteOrder = (id: number) => {
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this order?",
+  );
 
+  if (!confirmed) return;
+
+  setOrderList((prevOrders) =>
+    prevOrders.filter((order) => order.id !== id),
+  );
+
+  setSelectedOrder((prevOrder) =>
+    prevOrder?.id === id ? null : prevOrder,
+  );
+
+  setCurrentPage(1);
+};
   return (
     <div>
       {/* Header */}
@@ -255,7 +271,15 @@ useEffect(() => {
 
       {/* Orders Table */}
       <Table
-        headers={["Order", "Customer", "Product", "Amount", "Date", "Status"]}
+       headers={[
+  "Order",
+  "Customer",
+  "Product",
+  "Amount",
+  "Date",
+  "Status",
+  "Actions",
+]}
       >
         {currentOrders.length > 0 ? (
           currentOrders.map((order) => (
@@ -309,6 +333,17 @@ useEffect(() => {
                   <option value="Cancelled">Cancelled</option>
                 </select>
               </td>
+              <td className="px-6 py-4">
+  <button
+    type="button"
+    onClick={() => handleDeleteOrder(order.id)}
+    className="rounded-lg p-2 text-red-500 transition hover:bg-red-50 hover:text-red-700"
+    title="Delete order"
+    aria-label={`Delete ${order.orderNumber}`}
+  >
+    <MdDelete size={20} />
+  </button>
+</td>
             </tr>
           ))
         ) : (
