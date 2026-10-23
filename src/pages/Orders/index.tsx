@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Table from "../../components/table/Table";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdEdit } from "react-icons/md";
+
 type OrderStatus = "Pending" | "Processing" | "Completed" | "Cancelled";
 
 type Order = {
@@ -12,6 +13,14 @@ type Order = {
   amount: number;
   date: string;
   status: OrderStatus;
+};
+
+type OrderForm = {
+  customer: string;
+  email: string;
+  product: string;
+  amount: string;
+  date: string;
 };
 
 const initialOrders: Order[] = [
@@ -117,38 +126,54 @@ const initialOrders: Order[] = [
   },
 ];
 
+const emptyForm: OrderForm = {
+  customer: "",
+  email: "",
+  product: "",
+  amount: "",
+  date: "",
+};
+
 const Orders = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-const [orderList, setOrderList] = useState<Order[]>(() => {
-  const savedOrders = localStorage.getItem("orders");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState<OrderForm>(emptyForm);
 
-  if (savedOrders) {
-    try {
-      return JSON.parse(savedOrders);
-    } catch {
-      return initialOrders;
+  const [orderList, setOrderList] = useState<Order[]>(() => {
+    const savedOrders = localStorage.getItem("orders");
+
+    if (savedOrders) {
+      try {
+        const parsedOrders: unknown = JSON.parse(savedOrders);
+
+        if (Array.isArray(parsedOrders)) {
+          return parsedOrders as Order[];
+        }
+      } catch {
+        return initialOrders;
+      }
     }
-  }
 
-  return initialOrders;
-});
+    return initialOrders;
+  });
 
-useEffect(() => {
-  localStorage.setItem("orders", JSON.stringify(orderList));
-}, [orderList]);
-
+  useEffect(() => {
+    localStorage.setItem("orders", JSON.stringify(orderList));
+  }, [orderList]);
 
   const ordersPerPage = 5;
 
   const filteredOrders = orderList.filter((order) => {
+    const searchTerm = search.toLowerCase();
+
     const matchesSearch =
-      order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
-      order.customer.toLowerCase().includes(search.toLowerCase()) ||
-      order.email.toLowerCase().includes(search.toLowerCase()) ||
-      order.product.toLowerCase().includes(search.toLowerCase());
+      order.orderNumber.toLowerCase().includes(searchTerm) ||
+      order.customer.toLowerCase().includes(searchTerm) ||
+      order.email.toLowerCase().includes(searchTerm) ||
+      order.product.toLowerCase().includes(searchTerm);
 
     const matchesStatus =
       statusFilter === "All" || order.status === statusFilter;
@@ -157,28 +182,22 @@ useEffect(() => {
   });
 
   const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
-
   const startIndex = (currentPage - 1) * ordersPerPage;
-
   const currentOrders = filteredOrders.slice(
     startIndex,
     startIndex + ordersPerPage,
   );
 
   const getStatusStyle = (status: OrderStatus) => {
-    if (status === "Completed") {
-      return "bg-green-100 text-green-700";
-    }
-
-    if (status === "Processing") {
-      return "bg-blue-100 text-blue-700";
-    }
-
-    if (status === "Pending") {
-      return "bg-yellow-100 text-yellow-700";
-    }
-
+    if (status === "Completed") return "bg-green-100 text-green-700";
+    if (status === "Processing") return "bg-blue-100 text-blue-700";
+    if (status === "Pending") return "bg-yellow-100 text-yellow-700";
     return "bg-red-100 text-red-700";
+  };
+
+  const closeModal = () => {
+    setSelectedOrder(null);
+    setIsEditing(false);
   };
 
   const handleStatusChange = (id: number, status: OrderStatus) => {
@@ -192,35 +211,93 @@ useEffect(() => {
       prevOrder?.id === id ? { ...prevOrder, status } : prevOrder,
     );
   };
-const handleDeleteOrder = (id: number) => {
-  const confirmed = window.confirm(
-    "Are you sure you want to delete this order?",
-  );
 
-  if (!confirmed) return;
+  const handleDeleteOrder = (id: number) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this order?",
+    );
 
-  setOrderList((prevOrders) =>
-    prevOrders.filter((order) => order.id !== id),
-  );
+    if (!confirmed) return;
 
-  setSelectedOrder((prevOrder) =>
-    prevOrder?.id === id ? null : prevOrder,
-  );
+    setOrderList((prevOrders) =>
+      prevOrders.filter((order) => order.id !== id),
+    );
 
-  setCurrentPage(1);
-};
+    setSelectedOrder((prevOrder) =>
+      prevOrder?.id === id ? null : prevOrder,
+    );
+    setIsEditing(false);
+    setCurrentPage(1);
+  };
+
+  const handleEditOrder = (order: Order) => {
+    setSelectedOrder(order);
+    setEditForm({
+      customer: order.customer,
+      email: order.email,
+      product: order.product,
+      amount: String(order.amount),
+      date: order.date,
+    });
+    setIsEditing(true);
+  };
+
+  const handleSaveOrder = () => {
+    if (!selectedOrder) return;
+
+    if (
+      !editForm.customer.trim() ||
+      !editForm.email.trim() ||
+      !editForm.product.trim() ||
+      !editForm.amount.trim() ||
+      !editForm.date
+    ) {
+      window.alert("Please fill in all fields.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email.trim())) {
+      window.alert("Please enter a valid email address.");
+      return;
+    }
+
+    const amount = Number(editForm.amount);
+
+    if (!Number.isFinite(amount) || amount < 0) {
+      window.alert("Amount must be a valid non-negative number.");
+      return;
+    }
+
+    const updatedOrder: Order = {
+      ...selectedOrder,
+      customer: editForm.customer.trim(),
+      email: editForm.email.trim(),
+      product: editForm.product.trim(),
+      amount,
+      date: editForm.date,
+    };
+
+    setOrderList((prevOrders) =>
+      prevOrders.map((order) =>
+        order.id === selectedOrder.id ? updatedOrder : order,
+      ),
+    );
+
+    setSelectedOrder(updatedOrder);
+    setIsEditing(false);
+  };
+
   return (
     <div>
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Orders</h1>
-
         <p className="mt-1 text-sm text-slate-500">
           Manage and track customer orders
         </p>
       </div>
 
-      {/* Search & Filter */}
+      {/* Search and Filter */}
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <div className="relative w-full max-w-sm">
           <input
@@ -271,15 +348,15 @@ const handleDeleteOrder = (id: number) => {
 
       {/* Orders Table */}
       <Table
-       headers={[
-  "Order",
-  "Customer",
-  "Product",
-  "Amount",
-  "Date",
-  "Status",
-  "Actions",
-]}
+        headers={[
+          "Order",
+          "Customer",
+          "Product",
+          "Amount",
+          "Date",
+          "Status",
+          "Actions",
+        ]}
       >
         {currentOrders.length > 0 ? (
           currentOrders.map((order) => (
@@ -287,35 +364,30 @@ const handleDeleteOrder = (id: number) => {
               key={order.id}
               className="border-b transition hover:bg-slate-50"
             >
-              {/* Order */}
               <td className="px-6 py-4">
                 <button
-                  onClick={() => setSelectedOrder(order)}
+                  type="button"
+                  onClick={() => {
+                    setSelectedOrder(order);
+                    setIsEditing(false);
+                  }}
                   className="font-semibold text-blue-600 transition hover:text-blue-800 hover:underline"
                 >
                   {order.orderNumber}
                 </button>
               </td>
 
-              {/* Customer */}
               <td className="px-6 py-4">
                 <div>
                   <p className="font-medium text-slate-800">{order.customer}</p>
-
                   <p className="text-sm text-slate-500">{order.email}</p>
                 </div>
               </td>
 
-              {/* Product */}
               <td className="px-6 py-4">{order.product}</td>
-
-              {/* Amount */}
               <td className="px-6 py-4 font-medium">${order.amount}</td>
-
-              {/* Date */}
               <td className="px-6 py-4 text-slate-600">{order.date}</td>
 
-              {/* Status */}
               <td className="px-6 py-4">
                 <select
                   value={order.status}
@@ -333,22 +405,35 @@ const handleDeleteOrder = (id: number) => {
                   <option value="Cancelled">Cancelled</option>
                 </select>
               </td>
+
               <td className="px-6 py-4">
-  <button
-    type="button"
-    onClick={() => handleDeleteOrder(order.id)}
-    className="rounded-lg p-2 text-red-500 transition hover:bg-red-50 hover:text-red-700"
-    title="Delete order"
-    aria-label={`Delete ${order.orderNumber}`}
-  >
-    <MdDelete size={20} />
-  </button>
-</td>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleEditOrder(order)}
+                    className="rounded-lg p-2 text-amber-500 transition hover:bg-amber-50 hover:text-amber-700"
+                    title="Edit order"
+                    aria-label={`Edit ${order.orderNumber}`}
+                  >
+                    <MdEdit size={20} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteOrder(order.id)}
+                    className="rounded-lg p-2 text-red-500 transition hover:bg-red-50 hover:text-red-700"
+                    title="Delete order"
+                    aria-label={`Delete ${order.orderNumber}`}
+                  >
+                    <MdDelete size={20} />
+                  </button>
+                </div>
+              </td>
             </tr>
           ))
         ) : (
           <tr>
-            <td colSpan={6} className="py-8 text-center text-slate-500">
+            <td colSpan={7} className="py-8 text-center text-slate-500">
               No orders found.
             </td>
           </tr>
@@ -359,6 +444,7 @@ const handleDeleteOrder = (id: number) => {
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-center gap-2">
           <button
+            type="button"
             onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
             disabled={currentPage === 1}
             className="rounded-lg border border-slate-300 px-4 py-2 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
@@ -369,6 +455,7 @@ const handleDeleteOrder = (id: number) => {
           {Array.from({ length: totalPages }, (_, index) => index + 1).map(
             (page) => (
               <button
+                type="button"
                 key={page}
                 onClick={() => setCurrentPage(page)}
                 className={`rounded-lg px-4 py-2 transition ${
@@ -383,6 +470,7 @@ const handleDeleteOrder = (id: number) => {
           )}
 
           <button
+            type="button"
             onClick={() =>
               setCurrentPage((page) => Math.min(page + 1, totalPages))
             }
@@ -394,106 +482,251 @@ const handleDeleteOrder = (id: number) => {
         </div>
       )}
 
-      {/* Order Details Modal */}
+      {/* Order Details / Edit Modal */}
       {selectedOrder && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-          onClick={() => setSelectedOrder(null)}
+          onClick={closeModal}
         >
           <div
-            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
             <div className="mb-6 flex items-center justify-between">
               <div>
-                <h2 className="text-2xl font-bold">Order Details</h2>
-
+                <h2 className="text-2xl font-bold">
+                  {isEditing ? "Edit Order" : "Order Details"}
+                </h2>
                 <p className="mt-1 text-sm text-slate-500">
                   {selectedOrder.orderNumber}
                 </p>
               </div>
 
               <button
-                onClick={() => setSelectedOrder(null)}
+                type="button"
+                onClick={closeModal}
                 className="rounded-lg px-3 py-2 text-xl text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
                 title="Close"
+                aria-label="Close modal"
               >
                 ×
               </button>
             </div>
 
-            {/* Order Information */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b pb-3">
-                <span className="text-sm text-slate-500">Customer</span>
+            {isEditing ? (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSaveOrder();
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label
+                    htmlFor="edit-customer"
+                    className="mb-1 block text-sm font-medium text-slate-600"
+                  >
+                    Customer
+                  </label>
+                  <input
+                    id="edit-customer"
+                    type="text"
+                    required
+                    value={editForm.customer}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        customer: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
+                  />
+                </div>
 
-                <span className="font-medium text-slate-800">
-                  {selectedOrder.customer}
-                </span>
-              </div>
+                <div>
+                  <label
+                    htmlFor="edit-email"
+                    className="mb-1 block text-sm font-medium text-slate-600"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="edit-email"
+                    type="email"
+                    required
+                    value={editForm.email}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        email: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
+                  />
+                </div>
 
-              <div className="flex items-center justify-between border-b pb-3">
-                <span className="text-sm text-slate-500">Email</span>
+                <div>
+                  <label
+                    htmlFor="edit-product"
+                    className="mb-1 block text-sm font-medium text-slate-600"
+                  >
+                    Product
+                  </label>
+                  <input
+                    id="edit-product"
+                    type="text"
+                    required
+                    value={editForm.product}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        product: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
+                  />
+                </div>
 
-                <span className="text-sm text-slate-800">
-                  {selectedOrder.email}
-                </span>
-              </div>
+                <div>
+                  <label
+                    htmlFor="edit-amount"
+                    className="mb-1 block text-sm font-medium text-slate-600"
+                  >
+                    Amount ($)
+                  </label>
+                  <input
+                    id="edit-amount"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    required
+                    value={editForm.amount}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        amount: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
+                  />
+                </div>
 
-              <div className="flex items-center justify-between border-b pb-3">
-                <span className="text-sm text-slate-500">Product</span>
+                <div>
+                  <label
+                    htmlFor="edit-date"
+                    className="mb-1 block text-sm font-medium text-slate-600"
+                  >
+                    Date
+                  </label>
+                  <input
+                    id="edit-date"
+                    type="date"
+                    required
+                    value={editForm.date}
+                    onChange={(e) =>
+                      setEditForm((prev) => ({
+                        ...prev,
+                        date: e.target.value,
+                      }))
+                    }
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
+                  />
+                </div>
 
-                <span className="font-medium text-slate-800">
-                  {selectedOrder.product}
-                </span>
-              </div>
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                  >
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-slate-700 transition hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-4 border-b pb-3">
+                    <span className="text-sm text-slate-500">Customer</span>
+                    <span className="text-right font-medium text-slate-800">
+                      {selectedOrder.customer}
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between border-b pb-3">
-                <span className="text-sm text-slate-500">Amount</span>
+                  <div className="flex items-center justify-between gap-4 border-b pb-3">
+                    <span className="text-sm text-slate-500">Email</span>
+                    <span className="break-all text-right text-sm text-slate-800">
+                      {selectedOrder.email}
+                    </span>
+                  </div>
 
-                <span className="font-semibold text-slate-800">
-                  ${selectedOrder.amount}
-                </span>
-              </div>
+                  <div className="flex items-center justify-between gap-4 border-b pb-3">
+                    <span className="text-sm text-slate-500">Product</span>
+                    <span className="text-right font-medium text-slate-800">
+                      {selectedOrder.product}
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between border-b pb-3">
-                <span className="text-sm text-slate-500">Date</span>
+                  <div className="flex items-center justify-between border-b pb-3">
+                    <span className="text-sm text-slate-500">Amount</span>
+                    <span className="font-semibold text-slate-800">
+                      ${selectedOrder.amount}
+                    </span>
+                  </div>
 
-                <span className="text-slate-800">{selectedOrder.date}</span>
-              </div>
+                  <div className="flex items-center justify-between border-b pb-3">
+                    <span className="text-sm text-slate-500">Date</span>
+                    <span className="text-slate-800">{selectedOrder.date}</span>
+                  </div>
 
-              {/* Status */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-500">Status</span>
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="text-sm text-slate-500">Status</span>
+                    <select
+                      value={selectedOrder.status}
+                      onChange={(e) =>
+                        handleStatusChange(
+                          selectedOrder.id,
+                          e.target.value as OrderStatus,
+                        )
+                      }
+                      className={`cursor-pointer rounded-full border-0 px-3 py-1 text-xs font-semibold outline-none ${getStatusStyle(
+                        selectedOrder.status,
+                      )}`}
+                      aria-label="Change order status"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Completed">Completed</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </div>
+                </div>
 
-                <select
-                  value={selectedOrder.status}
-                  onChange={(e) =>
-                    handleStatusChange(
-                      selectedOrder.id,
-                      e.target.value as OrderStatus,
-                    )
-                  }
-                  className={`cursor-pointer rounded-full border-0 px-3 py-1 text-xs font-semibold outline-none ${getStatusStyle(
-                    selectedOrder.status,
-                  )}`}
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Processing">Processing</option>
-                  <option value="Completed">Completed</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="mt-6 w-full rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
-            >
-              Close
-            </button>
+                <div className="mt-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleEditOrder(selectedOrder)}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-white transition hover:bg-amber-600"
+                  >
+                    <MdEdit size={18} />
+                    Edit Order
+                  </button>
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
