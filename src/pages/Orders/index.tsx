@@ -219,13 +219,9 @@ const Orders = () => {
 
     if (!confirmed) return;
 
-    setOrderList((prevOrders) =>
-      prevOrders.filter((order) => order.id !== id),
-    );
+    setOrderList((prevOrders) => prevOrders.filter((order) => order.id !== id));
 
-    setSelectedOrder((prevOrder) =>
-      prevOrder?.id === id ? null : prevOrder,
-    );
+    setSelectedOrder((prevOrder) => (prevOrder?.id === id ? null : prevOrder));
     setIsEditing(false);
     setCurrentPage(1);
   };
