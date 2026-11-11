@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 
 const getSavedSettings = () => {
@@ -42,7 +41,7 @@ const Settings = () => {
   const [email, setEmail] = useState(savedSettings.email);
 
   const [emailNotifications, setEmailNotifications] = useState(
-    savedSettings.emailNotifications
+    savedSettings.emailNotifications,
   );
 
   const [darkMode, setDarkMode] = useState(savedSettings.darkMode);
@@ -160,9 +159,7 @@ const Settings = () => {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-medium text-gray-800">
-                Email Notifications
-              </h3>
+              <h3 className="font-medium text-gray-800">Email Notifications</h3>
 
               <p className="text-sm text-gray-500">
                 Receive email notifications and updates.
