@@ -1,4 +1,15 @@
-export const products = [
+export type ProductStatus = "Active" | "Inactive" | "Out of Stock";
+
+export interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  status: ProductStatus;
+}
+
+export const products: Product[] = [
   {
     id: 1,
     name: "Laptop",

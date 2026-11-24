@@ -1,18 +1,18 @@
-
 import { useEffect, useState } from "react";
 import { MdDelete, MdEdit, MdClose } from "react-icons/md";
 
 import Table from "../../components/table/Table";
 import { products } from "../../data/products";
+import type { Product, ProductStatus } from "../../data/products";
 
-type Product = (typeof products)[number];
+
 
 type ProductForm = {
   name: string;
   category: string;
   price: string;
   stock: string;
-  status: Product["status"];
+  status: ProductStatus;
 };
 
 const emptyProduct: ProductForm = {
@@ -20,7 +20,7 @@ const emptyProduct: ProductForm = {
   category: "",
   price: "",
   stock: "",
-  status: "Active" as Product["status"],
+  status: "Active",
 };
 
 const inputClass =
@@ -69,23 +69,19 @@ const Products = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const [selectedProduct, setSelectedProduct] =
-    useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const [newProduct, setNewProduct] =
-    useState<ProductForm>(emptyProduct);
+  const [newProduct, setNewProduct] = useState<ProductForm>(emptyProduct);
 
   // SEARCH, FILTER AND SORT
   const filteredProducts = [...productList]
     .filter((product) =>
       `${product.name} ${product.category}`
         .toLowerCase()
-        .includes(search.toLowerCase().trim())
+        .includes(search.toLowerCase().trim()),
     )
     .filter((product) =>
-      statusFilter === "All"
-        ? true
-        : product.status === statusFilter
+      statusFilter === "All" ? true : product.status === statusFilter,
     )
     .sort((a, b) => {
       if (sortBy === "name") {
@@ -104,20 +100,15 @@ const Products = () => {
     });
 
   // PAGINATION
-  const totalPages = Math.ceil(
-    filteredProducts.length / productsPerPage
-  );
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
-  const safeCurrentPage = Math.min(
-    currentPage,
-    Math.max(totalPages, 1)
-  );
+  const safeCurrentPage = Math.min(currentPage, Math.max(totalPages, 1));
 
   const startIndex = (safeCurrentPage - 1) * productsPerPage;
 
   const currentProducts = filteredProducts.slice(
     startIndex,
-    startIndex + productsPerPage
+    startIndex + productsPerPage,
   );
 
   // SUCCESS MESSAGE
@@ -134,7 +125,7 @@ const Products = () => {
     name: string,
     category: string,
     price: number,
-    stock: number
+    stock: number,
   ) => {
     if (!name.trim()) return "Product name is required.";
     if (!category.trim()) return "Category is required.";
@@ -177,7 +168,7 @@ const Products = () => {
       newProduct.name,
       newProduct.category,
       price,
-      stock
+      stock,
     );
 
     if (validationError) {
@@ -188,7 +179,7 @@ const Products = () => {
     const duplicateProduct = productList.some(
       (product) =>
         product.name.toLowerCase().trim() ===
-        newProduct.name.toLowerCase().trim()
+        newProduct.name.toLowerCase().trim(),
     );
 
     if (duplicateProduct) {
@@ -202,9 +193,9 @@ const Products = () => {
       category: newProduct.category.trim(),
       price,
       stock,
-      status: (
-        stock === 0 ? "Out of Stock" : newProduct.status
-      ) as Product["status"],
+      status: (stock === 0
+        ? "Out of Stock"
+        : newProduct.status) as Product["status"],
     };
 
     setProductList((prev) => [...prev, product]);
@@ -231,7 +222,7 @@ const Products = () => {
       selectedProduct.name,
       selectedProduct.category,
       selectedProduct.price,
-      selectedProduct.stock
+      selectedProduct.stock,
     );
 
     if (validationError) {
@@ -243,7 +234,7 @@ const Products = () => {
       (product) =>
         product.id !== selectedProduct.id &&
         product.name.toLowerCase().trim() ===
-          selectedProduct.name.toLowerCase().trim()
+          selectedProduct.name.toLowerCase().trim(),
     );
 
     if (duplicateProduct) {
@@ -255,19 +246,15 @@ const Products = () => {
       ...selectedProduct,
       name: selectedProduct.name.trim(),
       category: selectedProduct.category.trim(),
-      status: (
-        selectedProduct.stock === 0
-          ? "Out of Stock"
-          : selectedProduct.status
-      ) as Product["status"],
+      status: (selectedProduct.stock === 0
+        ? "Out of Stock"
+        : selectedProduct.status) as Product["status"],
     };
 
     setProductList((prev) =>
       prev.map((product) =>
-        product.id === updatedProduct.id
-          ? updatedProduct
-          : product
-      )
+        product.id === updatedProduct.id ? updatedProduct : product,
+      ),
     );
 
     setIsEditing(false);
@@ -280,14 +267,12 @@ const Products = () => {
   // DELETE PRODUCT
   const handleDeleteProduct = (id: number) => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this product?"
+      "Are you sure you want to delete this product?",
     );
 
     if (!confirmed) return;
 
-    setProductList((prev) =>
-      prev.filter((product) => product.id !== id)
-    );
+    setProductList((prev) => prev.filter((product) => product.id !== id));
 
     showSuccess("Product deleted successfully!");
   };
@@ -384,8 +369,7 @@ const Products = () => {
       {/* PRODUCT COUNT */}
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500">
         <p>
-          Showing {currentProducts.length} of {filteredProducts.length}{" "}
-          products
+          Showing {currentProducts.length} of {filteredProducts.length} products
         </p>
 
         <p>
@@ -398,14 +382,7 @@ const Products = () => {
 
       {/* PRODUCTS TABLE */}
       <Table
-        headers={[
-          "Name",
-          "Category",
-          "Price",
-          "Stock",
-          "Status",
-          "Actions",
-        ]}
+        headers={["Name", "Category", "Price", "Stock", "Status", "Actions"]}
       >
         {currentProducts.length > 0 ? (
           currentProducts.map((product) => (
@@ -493,39 +470,34 @@ const Products = () => {
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
             type="button"
-            onClick={() =>
-              setCurrentPage((page) => Math.max(page - 1, 1))
-            }
+            onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
             disabled={safeCurrentPage === 1}
             className="rounded-lg border border-slate-300 px-3 py-2 text-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4"
           >
             Previous
           </button>
 
-          {Array.from(
-            { length: totalPages },
-            (_, index) => index + 1
-          ).map((page) => (
-            <button
-              type="button"
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`rounded-lg px-3 py-2 text-sm transition sm:px-4 ${
-                safeCurrentPage === page
-                  ? "bg-blue-600 text-white"
-                  : "border border-slate-300 hover:bg-slate-100"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
+          {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+            (page) => (
+              <button
+                type="button"
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`rounded-lg px-3 py-2 text-sm transition sm:px-4 ${
+                  safeCurrentPage === page
+                    ? "bg-blue-600 text-white"
+                    : "border border-slate-300 hover:bg-slate-100"
+                }`}
+              >
+                {page}
+              </button>
+            ),
+          )}
 
           <button
             type="button"
             onClick={() =>
-              setCurrentPage((page) =>
-                Math.min(page + 1, totalPages)
-              )
+              setCurrentPage((page) => Math.min(page + 1, totalPages))
             }
             disabled={safeCurrentPage === totalPages}
             className="rounded-lg border border-slate-300 px-3 py-2 text-sm transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 sm:px-4"
@@ -540,9 +512,7 @@ const Products = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-3 backdrop-blur-sm sm:p-4">
           <div className={modalClass}>
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-800">
-                Edit Product
-              </h2>
+              <h2 className="text-xl font-bold text-slate-800">Edit Product</h2>
 
               <button
                 type="button"
@@ -606,9 +576,7 @@ const Products = () => {
                     setSelectedProduct({
                       ...selectedProduct,
                       price:
-                        e.target.value === ""
-                          ? NaN
-                          : Number(e.target.value),
+                        e.target.value === "" ? NaN : Number(e.target.value),
                     })
                   }
                   className={inputClass}
@@ -632,9 +600,7 @@ const Products = () => {
                     setSelectedProduct({
                       ...selectedProduct,
                       stock:
-                        e.target.value === ""
-                          ? NaN
-                          : Number(e.target.value),
+                        e.target.value === "" ? NaN : Number(e.target.value),
                     })
                   }
                   className={inputClass}
@@ -694,9 +660,7 @@ const Products = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-3 backdrop-blur-sm sm:p-4">
           <div className={modalClass}>
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-800">
-                Add Product
-              </h2>
+              <h2 className="text-xl font-bold text-slate-800">Add Product</h2>
 
               <button
                 type="button"
